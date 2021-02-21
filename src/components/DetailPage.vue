@@ -9,7 +9,7 @@
           <v-row>
             <v-col>
               <v-sheet elevation="3">
-                <v-img :src="game.posterLink" aspect-ratio="1.2" contain></v-img>
+                <v-img :src="game.posterLink" class="ma-1" aspect-ratio="1.2" contain></v-img>
               </v-sheet>
             </v-col>
             <v-col>
@@ -23,6 +23,16 @@
                   <tr>
                     <td class="text-left font-weight-bold">中文标题</td>
                     <td class="text-right" v-text="game.cnTitle"></td>
+                  </tr>
+                  <tr>
+                    <td class="text-left font-weight-bold">官方网站</td>
+                    <td v-if="game.officialWebSite !=null" class="text-right"
+                        @click="open_refer_link(game.officialWebsite)">
+                      <v-btn>前往</v-btn>
+                    </td>
+                    <td v-else class="text-right">
+                      暂无
+                    </td>
                   </tr>
                   <tr>
                     <td class="text-left font-weight-bold">游戏类型</td>
@@ -41,8 +51,7 @@
                   <tr>
                     <td class="text-left font-weight-bold">评分</td>
                     <td class="text-right">
-                      <v-rating :value="game.rating">
-
+                      <v-rating hover half-increments :value="game.rating">
                       </v-rating>
                     </td>
                   </tr>
@@ -53,25 +62,36 @@
                         <v-icon color="success" class="pr-1">mdi-check-bold</v-icon>
                         官方汉化
                       </div>
-
+                      <div v-else-if="game.localizationStatus ==='NOT_TRANSLATED'">
+                        <v-icon color="error" class="pr-1">mdi-alert-circle</v-icon>
+                        未汉化
+                      </div>
                     </td>
                   </tr>
                   <tr>
                     <td class="text-left font-weight-bold">汉化者</td>
                     <td class="text-right" v-text="game.localizationOrganization"></td>
                   </tr>
-                  <tr>
+                  <tr v-if="game.dlsiteId !=null || game.getchuId !=null">
                     <td colspan="3" class="pa-1">
                       <v-expansion-panels accordion class="pa-0">
                         <v-expansion-panel>
                           <v-expansion-panel-header class="font-weight-bold">购买链接</v-expansion-panel-header>
                           <v-expansion-panel-content>
                             <v-list>
-                              <v-list-item @click="open_dlsite_link">
+                              <v-list-item @click="open_dlsite_link" v-if="game.dlsiteId !=null">
                                 <v-list-item-icon>
                                   <v-icon color="blue">mdi-open-in-new</v-icon>
                                 </v-list-item-icon>
                                 <v-list-item-title>DlSite</v-list-item-title>
+                              </v-list-item>
+                              <v-list-item
+                                  @click="open_refer_link('http://www.getchu.com/soft.phtml?id='+game.getchuId)"
+                                  v-if="game.getchuId !=null">
+                                <v-list-item-icon>
+                                  <v-icon color="blue">mdi-open-in-new</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-title>GetChu</v-list-item-title>
                               </v-list-item>
                             </v-list>
                           </v-expansion-panel-content>
@@ -86,7 +106,8 @@
                           <v-expansion-panel-header class="font-weight-bold">引用链接</v-expansion-panel-header>
                           <v-expansion-panel-content>
                             <v-list>
-                              <v-list-item @click="open_dlsite_link" v-for="(value,key) in game.referLinks" :key="key">
+                              <v-list-item v-for="(value,key) in game.referLinks" :key="key"
+                                           @click="open_refer_link(value)">
                                 <v-list-item-icon>
                                   <v-icon v-if="key === 'Steam'">mdi-steam</v-icon>
                                   <v-icon v-else>mdi-open-in-new</v-icon>
@@ -103,7 +124,9 @@
                     <td class="text-left font-weight-bold">
                       信息最后更新日期
                     </td>
-                    <td v-if="game.infoLastUpdate != null" v-text="game.infoLastUpdate" class="text-right"></td>
+                    <td v-if="game.infoLastUpdate != null" class="text-right">
+                      {{ game.infoLastUpdate|moment("YYYY年MM月DD日 hh:mm") }}
+                    </td>
                     <td v-else v-text="'暂无数据'" class="text-right"></td>
                   </tr>
                   </tbody>
@@ -112,6 +135,20 @@
             </v-col>
           </v-row>
         </v-container>
+        <v-divider/>
+        <v-tabs>
+          <v-tab>简介</v-tab>
+          <v-tab-item>
+            <v-card class="pa-3">
+              <v-card-text v-text="game.description" class="text-pre-wrap">
+              </v-card-text>
+            </v-card>
+          </v-tab-item>
+          <v-tab v-if="game.detail != null">详情</v-tab>
+          <v-tab>下载</v-tab>
+
+          <v-tab>评论</v-tab>
+        </v-tabs>
       </v-card>
     </v-row>
 
@@ -120,6 +157,7 @@
 
 <script>
 import Api from "@/services/Api";
+
 
 export default {
   name: "DetailPage",
@@ -130,6 +168,9 @@ export default {
     }
   },
   methods: {
+    open_refer_link: function (link) {
+      window.open(link)
+    },
     open_dlsite_link: function () {
       window.open("https://www.dlsite.com/maniax/work/=/product_id/" + this.game.dlsiteId + ".html")
     },
