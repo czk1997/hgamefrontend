@@ -1,32 +1,49 @@
 <template>
   <v-container class="ma-auto mt-10">
+
     <v-row align="center" justify="center">
       <v-card elevation="2" width="80em">
         <v-container fluid class="ma-auto fill-height pa-2">
           <v-row dense>
-            <v-card-title class="ma-auto text-h5" v-text="game.jpTitle"></v-card-title>
+            <v-skeleton-loader v-if="loading" type="heading" min-width="30em" class="ma-auto pa-5"></v-skeleton-loader>
+            <v-card-title v-if="!loading" class="ma-auto text-h5" v-text="game.jpTitle"></v-card-title>
           </v-row>
           <v-row>
             <v-col>
               <v-sheet elevation="3">
-                <v-img :src="game.posterLink" class="ma-1" aspect-ratio="1.2" contain></v-img>
+                <v-skeleton-loader v-if="loading" type="image"
+                                   class="ma-2 align-center justify-center"></v-skeleton-loader>
+                <v-img v-else-if="!loading" :src="game.posterLink" class="ma-1" aspect-ratio="1.2" contain></v-img>
               </v-sheet>
             </v-col>
             <v-col>
               <v-sheet min-width="30em" class="pa-2">
+
                 <v-simple-table>
                   <tbody>
                   <tr>
                     <td class="text-left font-weight-bold">日文标题</td>
-                    <td class="text-right" v-text="game.jpTitle"></td>
+                    <td v-if="loading">
+                      <v-skeleton-loader type="list-item" class="mx-auto"
+                                         max-width="30em"></v-skeleton-loader>
+                    </td>
+                    <td v-if="!loading" class="text-right" v-text="game.jpTitle"></td>
                   </tr>
                   <tr>
                     <td class="text-left font-weight-bold">中文标题</td>
-                    <td class="text-right" v-text="game.cnTitle"></td>
+                    <td v-if="loading">
+                      <v-skeleton-loader type="list-item" class="mx-auto"
+                                         max-width="30em"></v-skeleton-loader>
+                    </td>
+                    <td v-if="!loading" class="text-right" v-text="game.cnTitle"></td>
                   </tr>
                   <tr>
                     <td class="text-left font-weight-bold">官方网站</td>
-                    <td v-if="game.officialWebSite !=null" class="text-right"
+                    <td v-if="loading">
+                      <v-skeleton-loader type="button" class="mx-auto"
+                                         max-width="4em"></v-skeleton-loader>
+                    </td>
+                    <td v-else-if="game.officialWebSite !=null && !loading" class="text-right"
                         @click="open_refer_link(game.officialWebsite)">
                       <v-btn>前往</v-btn>
                     </td>
@@ -36,11 +53,19 @@
                   </tr>
                   <tr>
                     <td class="text-left font-weight-bold">游戏类型</td>
-                    <td class="text-right">{{ game.gameType }}</td>
+                    <td v-if="loading">
+                      <v-skeleton-loader type="list-item" class="mx-auto"
+                                         max-width="30em"></v-skeleton-loader>
+                    </td>
+                    <td v-if="!loading" class="text-right">{{ game.gameType }}</td>
                   </tr>
                   <tr>
                     <td class="text-left font-weight-bold">标签</td>
-                    <td class="text-right">
+                    <td v-if="loading">
+                      <v-skeleton-loader type="list-item" class="mx-auto"
+                                         max-width="30em"></v-skeleton-loader>
+                    </td>
+                    <td v-if="!loading" class="text-right">
                       <v-chip-group column class="float-right">
                         <v-chip v-for="tag in game.tags" :key="tag"
                         >{{ tag }}
@@ -50,14 +75,22 @@
                   </tr>
                   <tr>
                     <td class="text-left font-weight-bold">评分</td>
-                    <td class="text-right">
+                    <td v-if="loading">
+                      <v-skeleton-loader type="list-item" class="mx-auto"
+                                         max-width="30em"></v-skeleton-loader>
+                    </td>
+                    <td v-if="!loading" class="text-right">
                       <v-rating hover half-increments :value="game.rating">
                       </v-rating>
                     </td>
                   </tr>
                   <tr>
                     <td class="text-left font-weight-bold">汉化状态</td>
-                    <td class="text-right">
+                    <td v-if="loading">
+                      <v-skeleton-loader type="list-item" class="mx-auto"
+                                         max-width="30em"></v-skeleton-loader>
+                    </td>
+                    <td v-if="!loading" class="text-right">
                       <div v-if="game.localizationStatus === 'OFFICIAL_TRANSLATION'">
                         <v-icon color="success" class="pr-1">mdi-check-bold</v-icon>
                         官方汉化
@@ -70,10 +103,18 @@
                   </tr>
                   <tr>
                     <td class="text-left font-weight-bold">汉化者</td>
-                    <td class="text-right" v-text="game.localizationOrganization"></td>
+                    <td v-if="loading">
+                      <v-skeleton-loader type="list-item" class="mx-auto"
+                                         max-width="30em"></v-skeleton-loader>
+                    </td>
+                    <td v-if="!loading" class="text-right" v-text="game.localizationOrganization"></td>
                   </tr>
-                  <tr v-if="game.dlsiteId !=null || game.getchuId !=null">
-                    <td colspan="3" class="pa-1">
+                  <tr v-if="!loading && (game.dlsiteId !=null || game.getchuId !=null)">
+                    <td colspan="3" v-if="loading">
+                      <v-skeleton-loader type="list-item" class="mx-auto"
+                                         max-width="60em"></v-skeleton-loader>
+                    </td>
+                    <td v-if="!loading" colspan="3" class="pa-1">
                       <v-expansion-panels accordion class="pa-0">
                         <v-expansion-panel>
                           <v-expansion-panel-header class="font-weight-bold">购买链接</v-expansion-panel-header>
@@ -100,7 +141,11 @@
                     </td>
                   </tr>
                   <tr>
-                    <td colspan="3" class="pa-1">
+                    <td colspan="3" v-if="loading">
+                      <v-skeleton-loader type="list-item" class="mx-auto"
+                                         max-width="60em"></v-skeleton-loader>
+                    </td>
+                    <td v-if="!loading" colspan="3" class="pa-1">
                       <v-expansion-panels accordion class="pa-0">
                         <v-expansion-panel>
                           <v-expansion-panel-header class="font-weight-bold">引用链接</v-expansion-panel-header>
@@ -124,7 +169,11 @@
                     <td class="text-left font-weight-bold">
                       信息最后更新日期
                     </td>
-                    <td v-if="game.infoLastUpdate != null" class="text-right">
+                    <td v-if="loading">
+                      <v-skeleton-loader type="list-item" class="mx-auto"
+                                         max-width="30em"></v-skeleton-loader>
+                    </td>
+                    <td v-else-if="!loading && game.infoLastUpdate != null" class="text-right">
                       {{ game.infoLastUpdate|moment("YYYY年MM月DD日 hh:mm") }}
                     </td>
                     <td v-else v-text="'暂无数据'" class="text-right"></td>
@@ -136,17 +185,20 @@
           </v-row>
         </v-container>
         <v-divider/>
-        <v-tabs>
+        <v-tabs class="pa-2">
           <v-tab>简介</v-tab>
           <v-tab-item>
             <v-card class="pa-3">
-              <v-card-text v-text="game.description" class="text-pre-wrap">
+              <v-skeleton-loader v-if="loading" type="paragraph" width="100em"></v-skeleton-loader>
+              <v-card-text v-if="!loading" v-text="game.description" class="text-pre-wrap">
               </v-card-text>
             </v-card>
           </v-tab-item>
-          <v-tab v-if="game.detail != null">详情</v-tab>
+          <v-tab v-if="! loading && game.detail != null">详情</v-tab>
           <v-tab>下载</v-tab>
-
+          <v-tab-item>
+            <DownloadComponent :game-id="gameId"/>
+          </v-tab-item>
           <v-tab>评论</v-tab>
         </v-tabs>
       </v-card>
@@ -157,12 +209,14 @@
 
 <script>
 import Api from "@/services/Api";
-
+import DownloadComponent from "@/components/DownloadComponent";
 
 export default {
   name: "DetailPage",
+  components: {DownloadComponent},
   data() {
     return {
+      loading: true,
       gameId: this.$route.params.id,
       game: null
     }
@@ -177,8 +231,11 @@ export default {
     fetchData: function () {
       Api.getGameInfo(this.gameId).then(response => {
         this.game = response.data.msg
+        this.loading = false
       }).catch()
+
     }
+
   },
   mounted() {
     this.fetchData()

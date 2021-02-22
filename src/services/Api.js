@@ -24,6 +24,16 @@ export default {
     },
     getGameInfo(gameId) {
         return instance.get(baseUrl + "game?gameId=" + gameId);
+    },
+    getYunDownloadInfo(gameId) {
+        return instance.get(baseUrl + "game/getYunDownLoadLink?gameId=" + gameId);
+    },
+    requestDownloadLink(gameId) {
+        return instance.get(baseUrl + "game/download?gameId=" + gameId);
+    },
+    requestS3UnzipPassword(gameId){
+        return instance.get(baseUrl +"game/getS3UnzipPassword?gameId="+gameId)
     }
+
 }
 
